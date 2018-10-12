@@ -1,0 +1,10 @@
+[package]
+name = "BitSun-Engine"
+version = "0.1.0"
+authors = ["ismith <idron-smith@friedrich.com>"]
+
+[dependencies]
+vulkano = "*"
+vulkano-win = "*"
+winit = "*"
+vulkano-shader-derive = "*"
