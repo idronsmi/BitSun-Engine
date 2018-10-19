@@ -4,7 +4,10 @@ version = "0.1.0"
 authors = ["ismith <idron-smith@friedrich.com>"]
 
 [dependencies]
+cgmath = "*"
+image = "*"
 vulkano = "*"
+vulkano-shaders = "*"
+vulkano-shader-derive = "*"
 vulkano-win = "*"
 winit = "*"
-vulkano-shader-derive = "*"

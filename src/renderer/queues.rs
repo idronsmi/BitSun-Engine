@@ -2,7 +2,6 @@ use std::sync::Arc;
 use vulkano::device::{Queue, QueuesIter};
 use vulkano::instance::QueueFamily;
 
-
 ///Collects all queues used on the gpu.
 ///The following ist guranteed:
 /// - graphics: Can do graphics operation
@@ -12,7 +11,6 @@ use vulkano::instance::QueueFamily;
 #[derive(Clone)]
 pub struct BsQueues {
     pub graphics: Arc<Queue>,
-    pub present: Arc<Queue>,
     pub compute: Arc<Queue>,
     pub transfer: Arc<Queue>,
 }
@@ -20,7 +18,6 @@ pub struct BsQueues {
 impl BsQueues {
     pub fn new(queues: QueuesIter) -> Self {
         let mut graphic_queue = None;
-        let mut present_queue = None;
         let mut compute_queue = None;
         let mut transfer_queue = None;
 
@@ -28,11 +25,6 @@ impl BsQueues {
         for q in queues {
             if q.family().supports_graphics() && graphic_queue.is_none() {
                 graphic_queue = Some(q);
-                continue;
-            }
-
-            if q.family().supports_graphics() && present_queue.is_none() {
-                present_queue = Some(q);
                 continue;
             }
 
@@ -67,7 +59,6 @@ impl BsQueues {
 
         BsQueues {
             graphics: graphic_queue.expect("Failed to find graphics queue"),
-            present: present_queue.expect("Failed to find graphics queue"),
             compute: compute_queue.expect("Failed to find compute queue"),
             transfer: transfer_queue.expect("Failed to find transfer queue"),
         }
