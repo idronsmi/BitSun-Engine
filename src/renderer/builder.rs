@@ -51,35 +51,58 @@ const VALIDATION_LAYERS: &[&str] = &["VK_LAYER_LUNARG_standard_validation"];
 #[derive(Copy, Clone)]
 struct Vertex {
     pos: [f32; 3],
-    color: [f32; 3],
     texCoord: [f32; 2],
 }
 impl Vertex {
-    fn new(pos: [f32; 3], color: [f32; 3], texCoord: [f32; 2]) -> Self {
-        Self {
-            pos,
-            color,
-            texCoord,
-        }
+    fn new(pos: [f32; 3], texCoord: [f32; 2]) -> Self {
+        Self { pos, texCoord }
     }
 }
-impl_vertex!(Vertex, pos, color, texCoord);
+impl_vertex!(Vertex, pos, texCoord);
 
-fn vertices() -> [Vertex; 8] {
+fn vertices() -> [Vertex; 24] {
     [
-        Vertex::new([-0.5, -0.5, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0]),
-        Vertex::new([0.5, -0.5, 0.0], [0.0, 1.0, 0.0], [1.0, 0.0]),
-        Vertex::new([0.5, 0.5, 0.0], [0.0, 0.0, 1.0], [1.0, 1.0]),
-        Vertex::new([-0.5, 0.5, 0.0], [1.0, 1.0, 1.0], [0.0, 1.0]),
-        Vertex::new([-0.5, -0.5, -0.5], [1.0, 0.0, 0.0], [0.0, 0.0]),
-        Vertex::new([0.5, -0.5, -0.5], [0.0, 1.0, 0.0], [1.0, 0.0]),
-        Vertex::new([0.5, 0.5, -0.5], [0.0, 0.0, 1.0], [1.0, 1.0]),
-        Vertex::new([-0.5, 0.5, -0.5], [1.0, 1.0, 1.0], [0.0, 1.0]),
+        Vertex::new([-0.5, -0.5, 0.5], [0.0, 0.0]),
+        Vertex::new([0.5, -0.5, 0.5], [1.0, 0.0]),
+        Vertex::new([0.5, 0.5, 0.5], [1.0, 1.0]),
+        Vertex::new([-0.5, 0.5, 0.5], [0.0, 1.0]),
+
+        Vertex::new([-0.5, -0.5, -0.5], [0.0, 0.0]),
+        Vertex::new([0.5, -0.5, -0.5], [1.0, 0.0]),
+        Vertex::new([0.5, 0.5, -0.5], [1.0, 1.0]),
+        Vertex::new([-0.5, 0.5, -0.5], [0.0, 1.0]),
+
+        Vertex::new([-0.5, -0.5, 0.5], [0.0, 0.0]),
+        Vertex::new([0.5, -0.5, 0.5], [1.0, 0.0]),
+        Vertex::new([0.5, -0.5, -0.5], [1.0, 1.0]),
+        Vertex::new([-0.5, -0.5, -0.5], [0.0, 1.0]),
+
+        Vertex::new([-0.5, 0.5, 0.5], [0.0, 0.0]),
+        Vertex::new([0.5, 0.5, 0.5], [1.0, 0.0]),
+        Vertex::new([0.5, 0.5, -0.5], [1.0, 1.0]),
+        Vertex::new([-0.5, 0.5, -0.5], [0.0, 1.0]),
+
+        Vertex::new([-0.5, -0.5, 0.5], [0.0, 0.0]),
+        Vertex::new([-0.5, 0.5, 0.5], [0.0, 1.0]),
+        Vertex::new([-0.5, 0.5, -0.5], [1.0, 1.0]),
+        Vertex::new([-0.5, -0.5, -0.5], [1.0, 0.0]),
+
+        Vertex::new([0.5, -0.5, 0.5], [0.0, 0.0]),
+        Vertex::new([0.5, 0.5, 0.5], [0.0, 1.0]),
+        Vertex::new([0.5, 0.5, -0.5], [1.0, 1.0]),
+        Vertex::new([0.5, -0.5, -0.5], [1.0, 0.0]),
     ]
 }
 
-fn indices() -> [u16; 12] {
-    [0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4]
+fn indices() -> [u16; 36] {
+    [
+        0,1,2,2,3,0,
+        4,5,6,6,7,4,
+        8,9,10,10,11,8,
+        12,13,14,14,15,12,
+        16,17,18,18,19,16,
+        20,21,22,22,23,20
+    ]
 }
 
 pub struct RendererBuilder {
@@ -179,7 +202,7 @@ impl RendererBuilder {
 
         let swap_chain_framebuffers = Self::create_framebuffers(
             &swap_chain_images,
-            g_buffer.depth_buffer.clone(),
+            g_buffer.depth.clone(),
             renderpass_manager.get_render_pass(),
         );
         let uniform_buffer_pool = CpuBufferPool::<vertex_shader::ty::UniformBufferObject>::new(
@@ -205,6 +228,7 @@ impl RendererBuilder {
             uniform_buffer_pool,
             vertex_buffer,
             index_buffer,
+            g_buffer,
             vec![],
             previous_frame_end,
             false,
@@ -315,10 +339,10 @@ impl RendererBuilder {
             .viewports(vec![viewport]) // NOTE: also sets scissor to cover whole viewport
             .fragment_shader(frag_shader_module.main_entry_point(), ())
             .depth_clamp(false)
+            .depth_stencil_simple_depth()
             // NOTE: there's an outcommented .rasterizer_discard() in Vulkano...
             .polygon_mode_fill() // = default
             .line_width(1.0) // = default
-            .cull_mode_back()
             .front_face_clockwise()
             // NOTE: no depth_bias here, but on pipeline::raster::Rasterization
             .blend_pass_through() // = default

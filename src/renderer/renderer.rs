@@ -3,6 +3,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Instant;
 
+use renderer::g_buffer::GBuffer;
 use renderer::queues::BsQueues;
 use renderer::renderpass_manager::RenderpassManager;
 use renderer::shaders;
@@ -46,6 +47,7 @@ pub struct Renderer {
     uniform_buffer_pool: CpuBufferPool<shaders::vertex_shader::ty::UniformBufferObject>,
     vertex_buffer: Arc<BufferAccess + Send + Sync>,
     index_buffer: Arc<TypedBufferAccess<Content = [u16]> + Send + Sync>,
+    g_buffer: GBuffer,
     command_buffers: Vec<Arc<AutoCommandBuffer>>,
     previous_frame_end: Option<Box<GpuFuture>>,
     recreate_swap_chain: bool,
@@ -66,6 +68,7 @@ impl Renderer {
         uniform_buffer_pool: CpuBufferPool<shaders::vertex_shader::ty::UniformBufferObject>,
         vertex_buffer: Arc<BufferAccess + Send + Sync>,
         index_buffer: Arc<TypedBufferAccess<Content = [u16]> + Send + Sync>,
+        g_buffer: GBuffer,
         command_buffers: Vec<Arc<AutoCommandBuffer>>,
         previous_frame_end: Option<Box<GpuFuture>>,
         recreate_swap_chain: bool,
@@ -84,6 +87,7 @@ impl Renderer {
             uniform_buffer_pool,
             vertex_buffer,
             index_buffer,
+            g_buffer,
             command_buffers,
             previous_frame_end,
             recreate_swap_chain,
@@ -110,18 +114,18 @@ impl Renderer {
     fn update_uniform_buffer(&self) -> shaders::vertex_shader::ty::UniformBufferObject {
         let elapsed = self.start_time.elapsed();
         let time = elapsed.as_secs() as f64 + elapsed.subsec_nanos() as f64 / 1_000_000_000.0;
-        let temp = Deg(90.0) * time as f32;
+        let temp = Deg(-55.0) * time as f32;
 
-        let _model = Matrix4::from_angle_z(temp);
+        let _model = Matrix4::from_angle_x(temp);
         let _view = Matrix4::look_at(
-            Point3::new(2.0, 2.0, 2.0),
+            Point3::new(3.0, 3.0, 3.0),
             Point3::new(0.0, 0.0, 0.0),
-            Vector3::new(0.0, 0.0, 1.0),
+            Vector3::new(0.0, 0.0, -3.0),
         );
         let _proj = perspective(
             Deg(45.0),
             self.swap_chain.dimensions()[0] as f32 / self.swap_chain.dimensions()[1] as f32,
-            0.01,
+            0.1,
             100.0,
         );
 
@@ -153,6 +157,7 @@ impl Renderer {
         };
         self.create_command_buffers();
         let command_buffer = self.command_buffers[image_index].clone();
+        let frame = self.swap_chain_framebuffers[image_index].clone();
 
         let future = self
             .previous_frame_end
@@ -185,9 +190,13 @@ impl Renderer {
     pub fn recreate_swap_chain(&mut self) -> bool {
         //TODO new dimmensions etc
 
-        let dimensions = self.window.surface().capabilities(self.device.physical_device())
+        let dimensions = self
+            .window
+            .surface()
+            .capabilities(self.device.physical_device())
             .expect("failed to get surface capabilities")
-            .current_extent.unwrap_or([1024, 768]);
+            .current_extent
+            .unwrap_or([1024, 768]);
 
         let (new_swapchain, new_images) = match self.swap_chain.recreate_with_dimension(dimensions)
         {
@@ -212,6 +221,8 @@ impl Renderer {
     }
 
     pub fn create_command_buffers(&mut self) {
+       
+
         let queue_family = self.queues.graphics.family();
         let uniform_buffer_pool_subuffer = self
             .uniform_buffer_pool
@@ -263,4 +274,34 @@ impl Renderer {
                 )
             }).collect();
     }
+
+    // pub fn depth(
+    //     &self,
+    //     command_buffer: Arc<AutoCommandBuffer>,
+    //     frame_buffer: Arc<FramebufferAbstract + Send + Sync>,
+    // ) {
+    //      let screen_sampler = Sampler::new(
+    //         self.device.clone(),
+    //         Filter::Linear,
+    //         Filter::Linear,
+    //         MipmapMode::Linear,
+    //         SamplerAddressMode::ClampToEdge,
+    //         SamplerAddressMode::ClampToEdge,
+    //         SamplerAddressMode::ClampToEdge,
+    //         0.0,
+    //         1.0,
+    //         1.0,
+    //         1.0,
+    //     ).expect("failed to create screen sampler");
+
+    //     let clearings = vec![
+    //         [0.0, 0.0, 0.0, 0.0].into()
+    //     ];
+
+    //     let mut new_cb = command_buffer
+    //         .begin_render_pass(frame_buffer, false, clearings)
+    //         .expect("failed to start assemble pass");
+
+    //     PersistentDescriptorSet::start(self.pipeline.get_pipeline_ref(), 0)
+    // }
 }

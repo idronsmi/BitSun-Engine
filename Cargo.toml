@@ -5,6 +5,7 @@ authors = ["ismith <idron-smith@friedrich.com>"]
 
 [dependencies]
 cgmath = "*"
+gltf = "*"
 image = "*"
 vulkano = "*"
 vulkano-shaders = "*"
