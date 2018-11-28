@@ -16,7 +16,7 @@ use vulkano::buffer::{
     TypedBufferAccess,
 };
 use vulkano::command_buffer::{AutoCommandBufferBuilder, CommandBuffer};
-use vulkano::device::{Device, DeviceExtensions, DeviceOwned, Queue};
+use vulkano::device::{ Features, Device, DeviceExtensions, DeviceOwned, Queue};
 use vulkano::format::Format;
 use vulkano::framebuffer::{Framebuffer, FramebufferAbstract, RenderPassAbstract, Subpass};
 use vulkano::image::{
@@ -26,7 +26,7 @@ use vulkano::image::{
 
 use vulkano::instance::debug::{DebugCallback, MessageTypes};
 use vulkano::instance::{
-    layers_list, Features, Instance, InstanceExtensions, PhysicalDevice, PhysicalDevicesIter,
+    layers_list, Instance, InstanceExtensions, PhysicalDevice, PhysicalDevicesIter,
     QueueFamily,
 };
 use vulkano::pipeline::{viewport::Viewport, GraphicsPipeline, GraphicsPipelineAbstract};
@@ -215,7 +215,7 @@ impl RendererBuilder {
 
         let previous_frame_end = Some(Self::create_sync_objects(&device));
 
-        let mut renderer = Renderer::build_from_builder(
+        let renderer = Renderer::build_from_builder(
             window,
             device,
             queues,

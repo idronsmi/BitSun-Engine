@@ -116,7 +116,7 @@ impl Renderer {
         let time = elapsed.as_secs() as f64 + elapsed.subsec_nanos() as f64 / 1_000_000_000.0;
         let temp = Deg(-55.0) * time as f32;
 
-        let _model = Matrix4::from_angle_x(temp);
+        let _model = Matrix4::from_angle_z(temp);
         let _view = Matrix4::look_at(
             Point3::new(3.0, 3.0, 3.0),
             Point3::new(0.0, 0.0, 0.0),

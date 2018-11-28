@@ -2,10 +2,10 @@ extern crate cgmath;
 extern crate image;
 #[macro_use]
 extern crate vulkano;
+#[macro_use]
+extern crate vulkano_shaders;
 extern crate vulkano_win;
 extern crate winit;
-#[macro_use]
-extern crate vulkano_shader_derive;
 
 mod renderer;
 
